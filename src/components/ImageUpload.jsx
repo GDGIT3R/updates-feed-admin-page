@@ -1,35 +1,41 @@
-import { useState } from "react";
-import { uploadImage } from "../services/cloudinary";
+import { useState } from "react"
+import { uploadImage } from "../services/cloudinary"
 
 export default function ImageUpload({ setImages }) {
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false)
 
   const handleUpload = async (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files)
 
-    console.log(files)
+    if (files.length === 0) return
 
-    if (files.length > 5) {
-      alert("Max 5 images allowed");
-      return;
-    }
+    setUploading(true)
 
-    setUploading(true);
-    const urls = [];
+    const urls = []
 
     for (let file of files) {
-      const url = await uploadImage(file);
-      urls.push(url);
+      const url = await uploadImage(file)
+      urls.push(url)
     }
 
-    setImages(urls);
-    setUploading(false);
-  };
+    setImages(urls)
+    setUploading(false)
+  }
 
   return (
-    <div>
-      <input type="file" multiple onChange={handleUpload} />
-      {uploading && <p>Uploading...</p>}
+    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 bg-muted/40 text-center hover:bg-muted/60 transition">
+      <input
+        type="file"
+        multiple
+        onChange={handleUpload}
+        className="mx-auto"
+      />
+
+      {uploading && (
+        <p className="text-sm text-muted-foreground mt-3">
+          Uploading images...
+        </p>
+      )}
     </div>
-  );
+  )
 }

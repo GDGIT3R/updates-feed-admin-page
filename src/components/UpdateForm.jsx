@@ -1,6 +1,25 @@
-import { useState } from "react";
-import ImageUpload from "./ImageUpload";
-import { postUpdate } from "../services/api";
+import { useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
+
+import ImageUpload from "./ImageUpload"
+import { postUpdate } from "../services/api"
 
 export default function UpdateForm() {
   const [form, setForm] = useState({
@@ -12,103 +31,171 @@ export default function UpdateForm() {
     links: "",
     expires_at: "",
     is_published: false,
-  });
+  })
 
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState([])
+  const [loading, setLoading] = useState(false)
 
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+  const handleChange = (name, value) => {
+    setForm({ ...form, [name]: value })
+  }
 
   const handleSubmit = async () => {
-    if (form.title.length < 3) return alert("Title too short");
-    if (!form.announcement_date) return alert("Date required");
-
-    setLoading(true);
+    setLoading(true)
 
     const payload = {
       ...form,
       links: form.links ? form.links.split(",") : [],
       images,
-    };
-
-    try {
-      const res = await postUpdate(payload);
-      alert("Posted successfully ✅");
-      console.log(res);
-    } catch (err) {
-      alert("Error posting");
-      console.error(err);
     }
 
-    setLoading(false);
-  };
+    try {
+      await postUpdate(payload)
+      alert("Posted successfully")
+    } catch {
+      alert("Error posting")
+    }
+
+    setLoading(false)
+  }
 
   return (
-    <div>
-      <h2>Create Update</h2>
+    <Card className="max-w-4xl mx-auto shadow-lg border border-gray-200 rounded-3xl">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold">
+          Create New Update
+        </CardTitle>
+      </CardHeader>
 
-      <select name="type" onChange={handleChange}>
-        <option value="club">Club</option>
-        <option value="general">General</option>
-      </select>
+      <CardContent className="space-y-10 pt-4">
 
-      <input
-        name="title"
-        placeholder="Title"
-        onChange={handleChange}
-      />
+        {/* Update Type */}
+        <div className="space-y-3">
+          <Label>Update Type</Label>
+          <Select
+            value={form.type}
+            onValueChange={(value) =>
+              handleChange("type", value)
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="club">Club</SelectItem>
+              <SelectItem value="general">General</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <textarea
-        name="content"
-        placeholder="Content"
-        onChange={handleChange}
-      />
+        {/* Title */}
+        <div className="space-y-3">
+          <Label>Title</Label>
+          <Input
+            placeholder="Enter update title"
+            value={form.title}
+            onChange={(e) =>
+              handleChange("title", e.target.value)
+            }
+          />
+        </div>
 
-      <input
-        type="date"
-        name="announcement_date"
-        onChange={handleChange}
-      />
+        {/* Content */}
+        <div className="space-y-3">
+          <Label>Content</Label>
+          <Textarea
+            rows={5}
+            placeholder="Write update content..."
+            value={form.content}
+            onChange={(e) =>
+              handleChange("content", e.target.value)
+            }
+          />
+        </div>
 
-      <input
-        name="source"
-        placeholder="Source"
-        onChange={handleChange}
-      />
+        {/* Dates */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label>Announcement Date</Label>
+            <Input
+              type="date"
+              value={form.announcement_date}
+              onChange={(e) =>
+                handleChange(
+                  "announcement_date",
+                  e.target.value
+                )
+              }
+            />
+          </div>
 
-      <input
-        name="links"
-        placeholder="Links (comma separated)"
-        onChange={handleChange}
-      />
+          <div className="space-y-3">
+            <Label>Expiry Date</Label>
+            <Input
+              type="date"
+              value={form.expires_at}
+              onChange={(e) =>
+                handleChange(
+                  "expires_at",
+                  e.target.value
+                )
+              }
+            />
+          </div>
+        </div>
 
-      <input
-        type="date"
-        name="expires_at"
-        onChange={handleChange}
-      />
+        {/* Source */}
+        <div className="space-y-3">
+          <Label>Source</Label>
+          <Input
+            placeholder="Optional source"
+            value={form.source}
+            onChange={(e) =>
+              handleChange("source", e.target.value)
+            }
+          />
+        </div>
 
-      <label>
-        Publish Now
-        <input
-          type="checkbox"
-          name="is_published"
-          onChange={handleChange}
-        />
-      </label>
+        {/* Links */}
+        <div className="space-y-3">
+          <Label>Links (comma separated)</Label>
+          <Input
+            placeholder="https://example.com"
+            value={form.links}
+            onChange={(e) =>
+              handleChange("links", e.target.value)
+            }
+          />
+        </div>
 
-      <ImageUpload setImages={setImages} />
+        {/* Publish */}
+        <div className="flex items-center gap-3">
+          <Checkbox
+            checked={form.is_published}
+            onCheckedChange={(checked) =>
+              handleChange("is_published", checked)
+            }
+          />
+          <Label>Publish immediately</Label>
+        </div>
 
-      <button onClick={handleSubmit}>
-        {loading ? "Posting..." : "Submit"}
-      </button>
-    </div>
-  );
+        {/* Upload */}
+        <div className="space-y-3">
+          <Label>Upload Images</Label>
+          <ImageUpload setImages={setImages} />
+        </div>
+
+        {/* Submit */}
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "Posting..." : "Submit Update"}
+        </Button>
+
+      </CardContent>
+    </Card>
+  )
 }
